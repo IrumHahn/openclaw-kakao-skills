@@ -1,0 +1,10 @@
+{
+  "name": "openclaw-bizchat-skill-scripts",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local Playwright scripts for the bizchat AgentSkill",
+  "scripts": {
+    "check": "node --check scripts/bizchat-monitor.js && node --check scripts/bizchat-send-safe.js && node --check scripts/bizchat-log-action.js"
+  },
+  "dependencies": { "playwright": "^1.55.0" }
+}

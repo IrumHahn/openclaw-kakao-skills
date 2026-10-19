@@ -1,0 +1,29 @@
+// Read a bounded snapshot of a separately opened KakaoTalk chat window.
+// Usage: osascript -l JavaScript kakao-context.jxa "exact room name" [max rows]
+function run(argv) {
+  const room = String(argv[0] || '').trim();
+  const limit = Number(argv[1] || 30);
+  if (!room || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new Error('Usage: kakao-context.jxa "exact room name" [1..100]');
+  }
+  const process = Application('System Events').processes.byName('KakaoTalk');
+  if (!process.exists()) throw new Error('KakaoTalk is not running');
+  const windows = process.windows().filter(window => window.name() === room);
+  if (windows.length !== 1) throw new Error(`Expected exactly one separate chat window named ${room}; found ${windows.length}`);
+  const tables = windows[0].scrollAreas().flatMap(area => area.tables());
+  if (tables.length !== 1) throw new Error(`Expected one message table; found ${tables.length}`);
+  const rows = tables[0].rows();
+  const start = Math.max(0, rows.length - limit);
+  const messages = [];
+  for (let index = start; index < rows.length; index++) {
+    const cells = rows[index].uiElements();
+    if (cells.length !== 1) continue;
+    const body = cells[0].textAreas().map(area => String(area.value() || '')).join('\n').trim();
+    if (!body) continue;
+    const labels = cells[0].staticTexts().map(item => String(item.value() || '').trim()).filter(Boolean);
+    const clock = labels[0] || null;
+    const sender = labels[1] || null;
+    messages.push({ row: index + 1, body, clock, sender });
+  }
+  return JSON.stringify({ room, observedRows: rows.length, messages, limitations: 'Accessibility rows can be virtualized. Sender may be omitted; full date and stable message IDs are not exposed. Row numbers are snapshot-local.' });
+}

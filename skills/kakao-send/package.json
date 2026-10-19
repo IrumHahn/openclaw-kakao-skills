@@ -1,0 +1,7 @@
+{
+  "name": "openclaw-kakao-send-skill-scripts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "check": "node --check scripts/kakao-open.js" }
+}
